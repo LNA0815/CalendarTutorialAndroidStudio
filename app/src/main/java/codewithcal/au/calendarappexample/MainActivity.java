@@ -14,12 +14,36 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements CalendarAdapter.OnItemListener
 {
     private TextView monthYearText;
     private RecyclerView calendarRecyclerView;
     private LocalDate selectedDate;
+
+    // Phasenfarben
+    private final Map<String, String> phasesColors = new HashMap<String, String>() {{
+        put("EFP_1", "#FFCCCC");
+        put("EFP_2", "#FFEBEB");
+        put("MFP", "#E0F7FA");
+        put("LFP", "#E0FCE4");
+        put("ELP", "#FFDAB9");
+        put("MLP", "#FFFACD");
+        put("LLP", "#D3D3D3");
+    }};
+
+    // Längen der Phasen (Anzahl der Tage)
+    private final Map<String, Integer> phasesLengths = new HashMap<String, Integer>() {{
+        put("EFP_1", 5);
+        put("EFP_2", 3);
+        put("MFP", 7);
+        put("LFP", 4);
+        put("ELP", 6);
+        put("MLP", 2);
+        put("LLP", 3);
+    }};
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -43,19 +67,43 @@ public class MainActivity extends AppCompatActivity implements CalendarAdapter.O
         ArrayList<String> daysInMonth = daysInMonthArray(selectedDate);
         ArrayList<Integer> backgroundColors = new ArrayList<>();
 
+        // Starte ab einem bestimmten Datum (z.B. 1. Juli)
+        LocalDate startDate = LocalDate.of(2024, 7, 1);
+        LocalDate currentDate = startDate;
+
         for (int i = 0; i < daysInMonth.size(); i++) {
             // Beispiel für zufällige Farben (du kannst hier deine eigene Logik verwenden)
             if (!daysInMonth.get(i).equals("")) {
-                backgroundColors.add(Color.rgb((int)(Math.random() * 256), (int)(Math.random() * 256), (int)(Math.random() * 256)));
+                LocalDate cellDate = selectedDate.withDayOfMonth(Integer.parseInt(daysInMonth.get(i)));
+                int color = getColorForDate(cellDate, startDate);
+                backgroundColors.add(color);
             } else {
                 backgroundColors.add(Color.WHITE);
             }
         }
 
-        CalendarAdapter calendarAdapter = new CalendarAdapter(daysInMonth, backgroundColors, this);
+        CalendarAdapter calendarAdapter = new CalendarAdapter(daysInMonth, backgroundColors, this, selectedDate);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getApplicationContext(), 7);
         calendarRecyclerView.setLayoutManager(layoutManager);
         calendarRecyclerView.setAdapter(calendarAdapter);
+    }
+
+    private int getColorForDate(LocalDate date, LocalDate startDate) {
+        int daysFromStart = (int) java.time.temporal.ChronoUnit.DAYS.between(startDate, date);
+        int totalDays = 0;
+
+        for (Map.Entry<String, Integer> entry : phasesLengths.entrySet()) {
+            String phase = entry.getKey();
+            int length = entry.getValue();
+
+            if (daysFromStart < totalDays + length) {
+                return Color.parseColor(phasesColors.get(phase));
+            }
+
+            totalDays += length;
+        }
+
+        return Color.WHITE; // Fallback-Farbe
     }
 
 
@@ -108,6 +156,10 @@ public class MainActivity extends AppCompatActivity implements CalendarAdapter.O
         {
             String message = "Selected Date " + dayText + " " + monthYearFromDate(selectedDate);
             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+
+            // Speichere den ausgewählten Tag und aktualisiere das RecyclerView
+            selectedDate = selectedDate.withDayOfMonth(Integer.parseInt(dayText));
+            setMonthView();
         }
     }
 }
