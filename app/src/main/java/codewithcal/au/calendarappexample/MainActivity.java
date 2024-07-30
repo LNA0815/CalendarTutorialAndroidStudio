@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
@@ -40,12 +41,23 @@ public class MainActivity extends AppCompatActivity implements CalendarAdapter.O
     {
         monthYearText.setText(monthYearFromDate(selectedDate));
         ArrayList<String> daysInMonth = daysInMonthArray(selectedDate);
+        ArrayList<Integer> backgroundColors = new ArrayList<>();
 
-        CalendarAdapter calendarAdapter = new CalendarAdapter(daysInMonth, this);
+        for (int i = 0; i < daysInMonth.size(); i++) {
+            // Beispiel für zufällige Farben (du kannst hier deine eigene Logik verwenden)
+            if (!daysInMonth.get(i).equals("")) {
+                backgroundColors.add(Color.rgb((int)(Math.random() * 256), (int)(Math.random() * 256), (int)(Math.random() * 256)));
+            } else {
+                backgroundColors.add(Color.WHITE);
+            }
+        }
+
+        CalendarAdapter calendarAdapter = new CalendarAdapter(daysInMonth, backgroundColors, this);
         RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getApplicationContext(), 7);
         calendarRecyclerView.setLayoutManager(layoutManager);
         calendarRecyclerView.setAdapter(calendarAdapter);
     }
+
 
     private ArrayList<String> daysInMonthArray(LocalDate date)
     {
