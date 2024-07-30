@@ -43,6 +43,9 @@ class CalendarAdapter extends RecyclerView.Adapter<CalendarViewHolder>
         holder.dayOfMonth.setText(daysOfMonth.get(position));
         holder.itemView.setBackgroundColor(backgroundColors.get(position));
 
+        String dayText = daysOfMonth.get(position);
+        holder.dayOfMonth.setText(dayText);
+
         // Überprüfe, ob der Tag dem ausgewählten Datum entspricht
         if (!daysOfMonth.get(position).equals("") && Integer.parseInt(daysOfMonth.get(position)) == selectedDate.getDayOfMonth())
         {
@@ -51,6 +54,18 @@ class CalendarAdapter extends RecyclerView.Adapter<CalendarViewHolder>
         else
         {
             holder.selectedDayBackground.setVisibility(View.GONE); // Verberge die Umrandung
+        }
+
+        // Überprüfen, ob der Tag der heutige Tag ist
+        if (!dayText.equals("") && Integer.parseInt(dayText) == LocalDate.now().getDayOfMonth()
+                && selectedDate.getMonth() == LocalDate.now().getMonth()
+                && selectedDate.getYear() == LocalDate.now().getYear()) {
+            holder.dayOfMonth.setTypeface(null, android.graphics.Typeface.BOLD); // Heute fett darstellen
+            holder.dayOfMonth.setTextColor(Color.RED); // Färbt den Text rot, wenn es der aktuelle Tag ist
+        } else {
+            holder.dayOfMonth.setTypeface(null, android.graphics.Typeface.NORMAL); // Normale Schriftart
+            holder.dayOfMonth.setTextColor(Color.BLACK); // Färbt den Text rot, wenn es der aktuelle Tag ist
+
         }
     }
 

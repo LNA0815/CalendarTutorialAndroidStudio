@@ -23,27 +23,9 @@ public class MainActivity extends AppCompatActivity implements CalendarAdapter.O
     private RecyclerView calendarRecyclerView;
     private LocalDate selectedDate;
 
-    // Phasenfarben
-    private final Map<String, String> phasesColors = new HashMap<String, String>() {{
-        put("EFP_1", "#FFCCCC");
-        put("EFP_2", "#FFEBEB");
-        put("MFP", "#E0F7FA");
-        put("LFP", "#E0FCE4");
-        put("ELP", "#FFDAB9");
-        put("MLP", "#FFFACD");
-        put("LLP", "#D3D3D3");
-    }};
-
-    // Längen der Phasen (Anzahl der Tage)
-    private final Map<String, Integer> phasesLengths = new HashMap<String, Integer>() {{
-        put("EFP_1", 5);
-        put("EFP_2", 3);
-        put("MFP", 7);
-        put("LFP", 4);
-        put("ELP", 6);
-        put("MLP", 2);
-        put("LLP", 3);
-    }};
+    // Farben und Phasenlängen
+    private String[] colors = {"#FFCCCC", "#FFEBEB", "#E0F7FA", "#E0FCE4", "#FFDAB9", "#FFFACD", "#D3D3D3"};
+    private int[] phaseLengths = {1, 5, 5, 3, 6, 6, 7};
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -72,7 +54,6 @@ public class MainActivity extends AppCompatActivity implements CalendarAdapter.O
         LocalDate currentDate = startDate;
 
         for (int i = 0; i < daysInMonth.size(); i++) {
-            // Beispiel für zufällige Farben (du kannst hier deine eigene Logik verwenden)
             if (!daysInMonth.get(i).equals("")) {
                 LocalDate cellDate = selectedDate.withDayOfMonth(Integer.parseInt(daysInMonth.get(i)));
                 int color = getColorForDate(cellDate, startDate);
@@ -87,25 +68,6 @@ public class MainActivity extends AppCompatActivity implements CalendarAdapter.O
         calendarRecyclerView.setLayoutManager(layoutManager);
         calendarRecyclerView.setAdapter(calendarAdapter);
     }
-
-    private int getColorForDate(LocalDate date, LocalDate startDate) {
-        int daysFromStart = (int) java.time.temporal.ChronoUnit.DAYS.between(startDate, date);
-        int totalDays = 0;
-
-        for (Map.Entry<String, Integer> entry : phasesLengths.entrySet()) {
-            String phase = entry.getKey();
-            int length = entry.getValue();
-
-            if (daysFromStart < totalDays + length) {
-                return Color.parseColor(phasesColors.get(phase));
-            }
-
-            totalDays += length;
-        }
-
-        return Color.WHITE; // Fallback-Farbe
-    }
-
 
     private ArrayList<String> daysInMonthArray(LocalDate date)
     {
@@ -137,6 +99,22 @@ public class MainActivity extends AppCompatActivity implements CalendarAdapter.O
         return date.format(formatter);
     }
 
+    private int getColorForDate(LocalDate date, LocalDate startDate)
+    {
+        long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(startDate, date);
+
+        int accumulatedDays = 0;
+        for (int i = 0; i < phaseLengths.length; i++) {
+            accumulatedDays += phaseLengths[i];
+            if (daysBetween < accumulatedDays) {
+                return Color.parseColor(colors[i]);
+            }
+        }
+
+        // Fallback (Falls die Tage außerhalb der Phasenlängen liegen)
+        return Color.WHITE;
+    }
+
     public void previousMonthAction(View view)
     {
         selectedDate = selectedDate.minusMonths(1);
@@ -163,11 +141,3 @@ public class MainActivity extends AppCompatActivity implements CalendarAdapter.O
         }
     }
 }
-
-
-
-
-
-
-
-
